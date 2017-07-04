@@ -31,7 +31,7 @@ static const CGFloat kCircleSize = 14.0f;
 @property (nonatomic, strong) NSArray *horizontalGridLines;
 @property (nonatomic, strong) NSArray *verticalGridLines;
 
-@property (nonatomic, strong) NSArray *outerLineViews;   //top, right, bottom, left
+@property (nonatomic, strong) NSArray<UIView *> *outerLineViews;   //top, right, bottom, left
 @property (nonatomic, strong) NSArray<UIView *> *outerDots;   //top, right, bottom, left
 
 - (void)setup;
@@ -45,7 +45,7 @@ static const CGFloat kCircleSize = 14.0f;
 {
     if (self = [super initWithFrame:frame]) {
         self.clipsToBounds = NO;
-        self.gridColor = [UIColor redColor];
+        self.gridColor = [UIColor whiteColor];
         [self setup];
     }
     
@@ -197,6 +197,17 @@ static const CGFloat kCircleSize = 14.0f;
 - (void)setGridHidden:(BOOL)gridHidden
 {
     [self setGridHidden:gridHidden animated:NO];
+}
+
+- (void)setGridColor:(UIColor *)gridColor
+{
+    _gridColor = gridColor;
+    for (UIView *dotView in self.outerDots) {
+        dotView.backgroundColor = gridColor;
+    }
+    for (UIView *lineView in self.outerLineViews) {
+        lineView.backgroundColor = gridColor;
+    }
 }
 
 #pragma mark - Private methods
