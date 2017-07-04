@@ -22,7 +22,9 @@
 
 #import "TOCropOverlayView.h"
 
-static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
+static const CGFloat kLineWidth = 2.0f;
+static const CGFloat kHalfLineWidth = kLineWidth / 2.0f;
+static const CGFloat kCircleSize = 14.0f;
 
 @interface TOCropOverlayView ()
 
@@ -30,11 +32,7 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
 @property (nonatomic, strong) NSArray *verticalGridLines;
 
 @property (nonatomic, strong) NSArray *outerLineViews;   //top, right, bottom, left
-
-@property (nonatomic, strong) NSArray *topLeftLineViews; //vertical, horizontal
-@property (nonatomic, strong) NSArray *bottomLeftLineViews;
-@property (nonatomic, strong) NSArray *bottomRightLineViews;
-@property (nonatomic, strong) NSArray *topRightLineViews;
+@property (nonatomic, strong) NSArray<UIView *> *outerDots;   //top, right, bottom, left
 
 - (void)setup;
 - (void)layoutLines;
@@ -47,6 +45,7 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
 {
     if (self = [super initWithFrame:frame]) {
         self.clipsToBounds = NO;
+        self.gridColor = [UIColor redColor];
         [self setup];
     }
     
@@ -58,14 +57,8 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
     UIView *(^newLineView)(void) = ^UIView *(void){
         return [self createNewLineView];
     };
-
-    _outerLineViews     = @[newLineView(), newLineView(), newLineView(), newLineView()];
-    
-    _topLeftLineViews   = @[newLineView(), newLineView()];
-    _bottomLeftLineViews = @[newLineView(), newLineView()];
-    _topRightLineViews  = @[newLineView(), newLineView()];
-    _bottomRightLineViews = @[newLineView(), newLineView()];
-    
+    _outerLineViews = @[newLineView(), newLineView(), newLineView(), newLineView()];
+    _outerDots = @[[self createDotView], [self createDotView], [self createDotView], [self createDotView]];
     self.displayHorizontalGridLines = YES;
     self.displayVerticalGridLines = YES;
 }
@@ -89,51 +82,33 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
 - (void)layoutLines
 {
     CGSize boundsSize = self.bounds.size;
-    
+
     //border lines
     for (NSInteger i = 0; i < 4; i++) {
         UIView *lineView = self.outerLineViews[i];
-        
         CGRect frame = CGRectZero;
         switch (i) {
-            case 0: frame = (CGRect){0,-1.0f,boundsSize.width+2.0f, 1.0f}; break; //top
-            case 1: frame = (CGRect){boundsSize.width,0.0f,1.0f,boundsSize.height}; break; //right
-            case 2: frame = (CGRect){-1.0f,boundsSize.height,boundsSize.width+2.0f,1.0f}; break; //bottom
-            case 3: frame = (CGRect){-1.0f,0,1.0f,boundsSize.height+1.0f}; break; //left
+            case 0: frame = (CGRect){-kHalfLineWidth, -kHalfLineWidth, boundsSize.width + kHalfLineWidth, kLineWidth}; break; //top
+            case 1: frame = (CGRect){boundsSize.width - kHalfLineWidth, 0, kLineWidth, boundsSize.height}; break; //right
+            case 2: frame = (CGRect){-kHalfLineWidth, boundsSize.height - kHalfLineWidth, boundsSize.width + kHalfLineWidth, kLineWidth}; break; //bottom
+            case 3: frame = (CGRect){-kHalfLineWidth, 0, kLineWidth, boundsSize.height}; break; //left
         }
-        
         lineView.frame = frame;
     }
-    
-    //corner liness
-    NSArray *cornerLines = @[self.topLeftLineViews, self.topRightLineViews, self.bottomRightLineViews, self.bottomLeftLineViews];
+
+    CGFloat circleRadius = kCircleSize / 2.0;
+    // draw circle
     for (NSInteger i = 0; i < 4; i++) {
-        NSArray *cornerLine = cornerLines[i];
-        
-        CGRect verticalFrame = CGRectZero, horizontalFrame = CGRectZero;
+        UIView *dotView = self.outerDots[i];
+        CGRect frame = CGRectZero;
         switch (i) {
-            case 0: //top left
-                verticalFrame = (CGRect){-3.0f,-3.0f,3.0f,kTOCropOverLayerCornerWidth+3.0f};
-                horizontalFrame = (CGRect){0,-3.0f,kTOCropOverLayerCornerWidth,3.0f};
-                break;
-            case 1: //top right
-                verticalFrame = (CGRect){boundsSize.width,-3.0f,3.0f,kTOCropOverLayerCornerWidth+3.0f};
-                horizontalFrame = (CGRect){boundsSize.width-kTOCropOverLayerCornerWidth,-3.0f,kTOCropOverLayerCornerWidth,3.0f};
-                break;
-            case 2: //bottom right
-                verticalFrame = (CGRect){boundsSize.width,boundsSize.height-kTOCropOverLayerCornerWidth,3.0f,kTOCropOverLayerCornerWidth+3.0f};
-                horizontalFrame = (CGRect){boundsSize.width-kTOCropOverLayerCornerWidth,boundsSize.height,kTOCropOverLayerCornerWidth,3.0f};
-                break;
-            case 3: //bottom left
-                verticalFrame = (CGRect){-3.0f,boundsSize.height-kTOCropOverLayerCornerWidth,3.0f,kTOCropOverLayerCornerWidth};
-                horizontalFrame = (CGRect){-3.0f,boundsSize.height,kTOCropOverLayerCornerWidth+3.0f,3.0f};
-                break;
+            case 0: frame = (CGRect){-circleRadius, -circleRadius, kCircleSize, kCircleSize}; break; //top
+            case 1: frame = (CGRect){boundsSize.width - circleRadius, -circleRadius, kCircleSize, kCircleSize}; break; //right
+            case 2: frame = (CGRect){boundsSize.width - circleRadius, boundsSize.height - circleRadius, kCircleSize, kCircleSize}; break; //bottom
+            case 3: frame = (CGRect){-circleRadius, boundsSize.height - circleRadius, kCircleSize, kCircleSize}; break; //left
         }
-        
-        [cornerLine[0] setFrame:verticalFrame];
-        [cornerLine[1] setFrame:horizontalFrame];
+        dotView.frame = frame;
     }
-    
     //grid lines - horizontal
     CGFloat thickness = 1.0f / [[UIScreen mainScreen] scale];
     NSInteger numberOfLines = self.horizontalGridLines.count;
@@ -187,7 +162,8 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
 
 #pragma mark - Property methods
 
-- (void)setDisplayHorizontalGridLines:(BOOL)displayHorizontalGridLines {
+- (void)setDisplayHorizontalGridLines:(BOOL)displayHorizontalGridLines
+{
     _displayHorizontalGridLines = displayHorizontalGridLines;
     
     [self.horizontalGridLines enumerateObjectsUsingBlock:^(UIView *__nonnull lineView, NSUInteger idx, BOOL * __nonnull stop) {
@@ -202,7 +178,8 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
     [self setNeedsDisplay];
 }
 
-- (void)setDisplayVerticalGridLines:(BOOL)displayVerticalGridLines {
+- (void)setDisplayVerticalGridLines:(BOOL)displayVerticalGridLines
+{
     _displayVerticalGridLines = displayVerticalGridLines;
     
     [self.verticalGridLines enumerateObjectsUsingBlock:^(UIView *__nonnull lineView, NSUInteger idx, BOOL * __nonnull stop) {
@@ -224,11 +201,22 @@ static const CGFloat kTOCropOverLayerCornerWidth = 20.0f;
 
 #pragma mark - Private methods
 
-- (nonnull UIView *)createNewLineView {
+- (nonnull UIView *)createNewLineView
+{
     UIView *newLine = [[UIView alloc] initWithFrame:CGRectZero];
-    newLine.backgroundColor = [UIColor whiteColor];
+    newLine.backgroundColor = self.gridColor;
     [self addSubview:newLine];
     return newLine;
+}
+
+- (nonnull UIView *)createDotView
+{
+    UIView *dot = [[UIView alloc] initWithFrame:CGRectZero];
+    dot.layer.masksToBounds = YES;
+    dot.layer.cornerRadius = kCircleSize / 2.0f;
+    dot.backgroundColor = self.gridColor;
+    [self addSubview:dot];
+    return dot;
 }
 
 @end
