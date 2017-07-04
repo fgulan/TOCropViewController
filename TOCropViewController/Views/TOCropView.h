@@ -55,6 +55,11 @@ typedef NS_ENUM(NSInteger, TOCropViewCroppingStyle) {
 @property (nonnull, nonatomic, strong, readonly) TOCropOverlayView *gridOverlayView;
 
 /**
+ A semi-transparent grey view, overlaid on top of the background image
+ */
+@property (nonnull, nonatomic, strong, readonly) UIView *overlayView;
+
+/**
  A delegate object that receives notifications from the crop view
  */
 @property (nullable, nonatomic, weak) id<TOCropViewDelegate> delegate;

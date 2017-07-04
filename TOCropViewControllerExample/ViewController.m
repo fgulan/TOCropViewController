@@ -44,6 +44,9 @@
     cropView.gridOverlayView.displayVerticalGridLines = NO;
     cropView.gridOverlayView.displayHorizontalGridLines = NO;
     self.cropView = cropView;
+    cropView.backgroundColor = [UIColor blackColor];
+    cropView.overlayView.backgroundColor = [UIColor blackColor];
+    cropView.simpleRenderMode = YES;
     [self addSubviewWithFillLayouting:cropView];
     self.image = image;
     
